@@ -1,0 +1,46 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: dbcheck
+      id: dbcheck
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: dbcheck
+        setup-command: ''
+        command: make test_in_docker FILE=tests/test_connect.py
+        max-score: 1
+        timeout: 2
+    - name: modify permission
+      if: ${{ env.GITHUB_ACTIONS && env.GITHUB_ACTIONS == "true" }}
+      run: |
+        chmod -v 777 public
+
+    - name: webaccess
+      id: webaccess
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: webaccess
+        setup-command: ''
+        command: make test_in_docker FILE=tests/test_webaccess.py
+        max-score: 1
+        timeout: 2
+
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        DBCHECK_RESULTS: "${{steps.dbcheck.outputs.result}}"
+        WEBACCESS_RESULTS: "${{steps.webaccess.outputs.result}}"
+      with:
+        runners: dbcheck, webaccess
