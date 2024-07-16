@@ -5,6 +5,7 @@ name: Build Docker Image
 on:
   push:
     paths:
+      - '.github/workflows/image-build.yml'
       - 'docker/**'
 
 jobs:
