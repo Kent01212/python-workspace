@@ -24,6 +24,11 @@ jobs:
         - name: Login to GitHub Container Registry
           run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
+        # イメージにつけるタグ名を生成して環境変数TAGに格納する
+        # タグ名はlatestとlatest-{epoch秒}の2つを用意する
+        - name: Set up tag
+          run: echo "TAG=ghcr.io/${{ github.repository }}/app:latest,ghcr.io/${{ github.repository }}/app:latest-$(date +%s)" >> $GITHUB_ENV
+
         # イメージをビルドして、ghcrにプッシュする
         # このときに、イメージに対するタグとして、latest以外に"latest-{epoch秒}"も用意する。
         - name: Build and push
@@ -34,7 +39,8 @@ jobs:
             file: ./docker/Dockerfile
             platforms: linux/amd64,linux/arm64
             push: true
-            tags: ghcr.io/${{ github.repository }}/app:latest,ghcr.io/${{ github.repository }}/app:latest-$(date +%s)
+            # タグ名は環境変数TAGから取得する
+            tags: ${{ env.TAG }}
 
         - name: Image digest
           run: echo ${{ steps.docker_build.outputs.digest }}
