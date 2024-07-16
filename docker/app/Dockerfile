@@ -44,4 +44,10 @@ curl -sL https://rye.astral.sh/get | RYE_INSTALL_OPTION="--yes" bash
 echo 'source "$HOME/.rye/env"' >> ~/.bashrc
 EOM
 
-# instl
+# instll pipenv
+RUN <<EOM
+pip install pipenv --break-system-packages
+echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc
+EOM
+WORKDIR /app
+
