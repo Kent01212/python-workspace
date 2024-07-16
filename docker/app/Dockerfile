@@ -52,9 +52,12 @@ rm get-pip.py
 EOM
 
 # instll pipenv
-RUN <<EOM
-pip install pipenv --break-system-packages
-echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.bashrc
-EOM
+RUN PATH=$HOME/.local/bin:$PATH pip install pipenv --break-system-packages --user
 WORKDIR /app
 
+# install nvm/node.js
+RUN <<EOM
+cd
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+bash -c "source $HOME/.nvm/nvm.sh; nvm install --lts"
+EOM
