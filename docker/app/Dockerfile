@@ -1,35 +1,47 @@
-FROM php:fpm-alpine
+FROM ubuntu:24.04
 ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
-# composerの移植
-COPY --from=composer/composer /usr/bin/composer /usr/bin/composer
-
-# 必須と思われるPHP拡張の導入
-RUN apk add --no-cache \
-    git \
-    zip \
-    unzip
-# Pythonの導入
-RUN apk add --no-cache \
-    python3 \
-    py3-pip
-RUN apk add --no-cache \
-    github-cli make sudo
-# RUN pecl install xdebug \
-#     && docker-php-ext-enable xdebug
-RUN docker-php-ext-install mysqli pdo_mysql
-
-# 作業用ユーザーの作成、シェルは/bin/sh
-RUN addgroup -g $USER_GID $USERNAME \
-    && adduser -u $USER_UID -G $USERNAME -s /bin/sh -D $USERNAME
+RUN <<EOM
+apt-get update
+apt-get install -y sudo
+EOM
+# 作業用ユーザーの作成、シェルは/bin/bash
+RUN userdel -r ubuntu
+RUN groupadd --gid $USER_GID $USERNAME
+RUN useradd  --uid ${USER_UID} --gid ${USER_GID} -G sudo -s /bin/bash -m ${USERNAME}
+#RUN chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}
 # $USERNAMEにはsudo権限を付与
-RUN echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USERNAME
-# composerのラッパーをインストール
-COPY composer /usr/local/bin/composer
-RUN chmod 755 /usr/local/bin/composer
-USER ${USERNAME}
-ENV PATH="/home/${USERNAME}/.composer/vendor/bin:/home/${USERNAME}/.local/bin:${PATH}"
-WORKDIR /app
+RUN <<EOM
+echo "$USERNAME ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/$USERNAME
+EOM
 
+# unzip/git/curlをインストール
+RUN <<EOM
+apt-get update
+apt-get install -y unzip git curl
+EOM
+
+# # node.jsをインストール
+# RUN <<EOM
+# apt-get update
+# apt-get install  -y  nodejs npm
+# EOM
+
+# install python
+RUN <<EOM
+apt-get update
+apt-get install -y python3 python3-pip
+EOM
+
+WORKDIR /home/${USERNAME}
+USER ${USERNAME}
+ENV PATH="home/${USERNAME}/.local/bin:home/${USERNAME}/bin:${PATH}"
+# install rye&pipenv
+RUN <<EOM
+curl -sL https://rye.astral.sh/get | RYE_INSTALL_OPTION="--yes" bash
+echo 'source "$HOME/.rye/env"' >> ~/.bashrc
+EOM
+
+# instl
