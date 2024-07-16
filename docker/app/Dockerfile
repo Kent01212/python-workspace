@@ -29,11 +29,11 @@ EOM
 # apt-get install  -y  nodejs npm
 # EOM
 
-# install python
-RUN <<EOM
-apt-get update
-apt-get install -y python3 python3-pip
-EOM
+# # install python
+# RUN <<EOM
+# apt-get update
+# apt-get install -y python3 python3-pip
+# EOM
 
 WORKDIR /home/${USERNAME}
 USER ${USERNAME}
@@ -42,6 +42,13 @@ ENV PATH="home/${USERNAME}/.local/bin:home/${USERNAME}/bin:${PATH}"
 RUN <<EOM
 curl -sL https://rye.astral.sh/get | RYE_INSTALL_OPTION="--yes" bash
 echo 'source "$HOME/.rye/env"' >> ~/.bashrc
+EOM
+
+RUN <<EOM
+curl -LO https://bootstrap.pypa.io/get-pip.py
+. $HOME/.rye/env; python get-pip.py --user
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+rm get-pip.py
 EOM
 
 # instll pipenv
