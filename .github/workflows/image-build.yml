@@ -28,7 +28,7 @@ jobs:
         # イメージにつけるタグ名を生成して環境変数TAGに格納する
         # タグ名はlatestとlatest-{epoch秒}の2つを用意する
         - name: Set up tag
-          run: echo "TAG=ghcr.io/${{ github.repository }}/app:latest,ghcr.io/${{ github.repository }}/app:latest-$(date +%s)" >> $GITHUB_ENV
+          run: echo "TAG=ghcr.io/${{ github.repository }}:latest,ghcr.io/${{ github.repository }}:latest-$(date +%s)" >> $GITHUB_ENV
 
         # イメージをビルドして、ghcrにプッシュする
         # このときに、イメージに対するタグとして、latest以外に"latest-{epoch秒}"も用意する。
