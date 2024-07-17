@@ -19,6 +19,17 @@
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 	"features": {
 		"ghcr.io/devcontainers/features/github-cli:1": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"marp-team.marp-vscode",
+				"ms-python.python",
+				"FedericoVarela.pipenv-scripts",
+				"WolfiesHorizon.python-auto-venv",
+				"charliermarsh.ruff"
+			]
+		}
 	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
