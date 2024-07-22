@@ -29,3 +29,4 @@ results/*
 
 __pycache__
 **/.venv/
+/git-learn

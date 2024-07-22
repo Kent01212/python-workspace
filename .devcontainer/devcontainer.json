@@ -30,7 +30,8 @@
 				"charliermarsh.ruff",
 				"hediet.vscode-drawio",
 				"bbenoist.shell",
-				"bmalehorn.shell-syntax"
+				"bmalehorn.shell-syntax",
+				"bierner.markdown-mermaid"
 			]
 		}
 	}

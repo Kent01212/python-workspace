@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "@marp-team/marp-cli": "^3.4.0",
+    "mermaid": "^10.9.1",
+    "prettier": "3.3.3"
+  },
+
+  "scripts": {
+    "web": "npx @marp-team/marp-cli --html -s ./slides"
+  }
+}
