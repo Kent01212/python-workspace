@@ -4,7 +4,7 @@ theme: gaia
 paginate: true
 backgroundColor: #fff
 backgroundImage: url('images/5397806.svg')
-size: 16:9
+size: "16:9"
 
 <!-- style -->
 <style>
