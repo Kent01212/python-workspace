@@ -35,6 +35,12 @@ EOM
 # apt-get install -y python3 python3-pip
 # EOM
 
+# install vim(tiny)
+RUN <<EOM
+apt-get update
+apt-get install -y vim-tiny
+EOM
+
 WORKDIR /home/${USERNAME}
 USER ${USERNAME}
 ENV PATH="home/${USERNAME}/.local/bin:home/${USERNAME}/bin:${PATH}"
@@ -60,4 +66,17 @@ RUN <<EOM
 cd
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
 bash -c "source $HOME/.nvm/nvm.sh; nvm install --lts"
+EOM
+
+# modify prompt
+RUN <<EOM
+cd /home/${USERNAME}
+cat <<'EOL' >> .bashrc
+color_prompt=yes
+if [ "$color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\n\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\n\$ '
+fi
+EOL
 EOM

@@ -27,7 +27,10 @@
 				"ms-python.python",
 				"FedericoVarela.pipenv-scripts",
 				"WolfiesHorizon.python-auto-venv",
-				"charliermarsh.ruff"
+				"charliermarsh.ruff",
+				"hediet.vscode-drawio",
+				"bbenoist.shell",
+				"bmalehorn.shell-syntax"
 			]
 		}
 	}

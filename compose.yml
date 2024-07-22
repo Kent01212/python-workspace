@@ -1,6 +1,6 @@
 services:
   app:
-    #image: python:3.12
+    # image: hcr.io/kd-it/python-workspace:latest-1721174278
     build:
       context: .
       dockerfile: docker/app/Dockerfile
