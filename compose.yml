@@ -1,9 +1,9 @@
 services:
   app:
-    # image: hcr.io/kd-it/python-workspace:latest-1721174278
-    build:
-      context: .
-      dockerfile: docker/app/Dockerfile
+    image: ghcr.io/kd-it/python-workspace:latest-1721849248
+    # build:
+    #   context: .
+    #   dockerfile: docker/app/Dockerfile
     volumes:
       - .:/app:cached
     command: ["/bin/sleep", "infinity"]
