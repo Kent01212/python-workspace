@@ -651,9 +651,313 @@ gitGraph
     checkout "hello-world"
     commit id: "hello-git"
     checkout "main"
-    commit id: "good-evening" type: HIGHLIGHT tag: "HEAD"
-    merge hello-world
+    commit id: "good-evening"
+    merge hello-world type: HIGHLIGHT tag: "HEAD"
 </div>
 
 
 ---
+
+# 素直にはマージできない
+
+* 新しいコミットを生成する
+  * 現ブランチのコミットとマージ先ブランチのコミットを統合したコミット
+  * 特に指定しなければ自動的にコミットメッセージを生成
+    * 『Merge branch "hello-world"』
+* conflict(競合)の発生は起こりうる
+  * 同じファイルを変更している場合
+  * どちらを採用するかを決める必要がある
+
+---
+
+# Fast-Forwardと実習
+
+次の手順でブランチを作ってマージしてみましょう
+
+1. `git branch hello-git` #ブランチ作成、移動
+2. `git switch hello-git`
+3. `echo "Hello hogehoge" > hoge.txt`
+4. `git add hoge.txt` # 新規ファイルをコミットする作業
+5. `git commit -m "Add hoge.txt"`
+6. `git switch main` # mainに戻って
+7. `git merge hello-git` # マージしてみる
+
+---
+
+# Fast-Forward
+
+<div class="mermaid">
+gitGraph
+    commit id: "hello"
+    branch "hello-git"
+    checkout "hello-git"
+    commit id: "hoge" type: HIGHLIGHT
+    checkout "main"
+    merge "hello-git" type: HIGHLIGHT
+</div>
+
+* 実は□の部分って同じものよね
+
+---
+
+# Fast-Forwardの実際
+
+![w:750](images/ff.drawio.png)
+
+---
+
+# Fast-Forward
+
+以下の条件を満たすと発生する
+* あるブランチ(元ブランチ)から枝分かれする
+* 枝分かれブランチが進む
+* 元ブランチ側が一切進んでいない
+
+グラフ上あってるけど、いやなら `--no-ff` にてマージコミットに変更可能
+
+---
+
+# コミットの競合
+
+* 同じファイルを編集したとき等に競合(conflict)が発生する
+  * 完全に離れている場合は自動マージが可能
+
+ちょっと手間ですが実際に体験しておきましょう。
+
+---
+
+# コミットの競合
+## まずは元データの準備
+
+1. `echo "test conflict" > conflict.txt`
+2. `git add conflict.txt`
+3. `git commit -m "Add conflict.txt"`
+
+<div class="mermaid">
+gitGraph
+    commit id: "Add conflict.txt" type: HIGHLIGHT
+</div>
+
+---
+
+# コミットの競合
+## 一度ブランチを切り替えて編集・コミット
+
+1. `git switch -C conflict-branch` #注意: 大文字C
+2. `echo "test conflict on conflict-branch" > conflict.txt`
+3. `git add conflict.txt`
+4. `git commit -m "Add conflict.txt on conflict-branch"`
+
+<div class="mermaid">
+gitGraph
+    commit id: "Add conflict.txt"
+    branch "conflict-branch"
+    checkout "conflict-branch"
+    commit id: "Add conflict.txt on conflict-branch" type: HIGHLIGHT
+</div>
+
+---
+
+# コミットの競合
+## mainに戻って進める
+
+1. `git switch main`
+2. `echo "test conflict on main" > conflict.txt`
+3. `git add conflict.txt`
+4. `git commit -m "Add conflict.txt on main"`
+
+<div class="mermaid">
+gitGraph
+    commit id: "Add conflict.txt"
+    branch "conflict-branch"
+    checkout "conflict-branch"
+    commit id: "Add conflict.txt on conflict-branch"
+    checkout "main"
+    commit id: "Add conflict.txt on main" type: HIGHLIGHT
+</div>
+
+---
+
+# コミットの競合
+## この時点での両者は?
+
+```
+$ git switch conflict-branch
+$ cat conflict.txt # "test conflict on conflict-branch"
+$ git switch main
+$ cat conflict.txt # "test conflict on main"
+```
+
+共に同じファイルの1行目(のみ)が異なっている
+
+---
+
+# コミットの競合
+## 競合を起こす
+
+```
+$ git switch main # 既に居るかもしれないけど
+$ git merge conflict-branch # conflict!
+$ cat conflict.txt # どうなったか?
+```
+
+共に同じファイルの1行目(のみ)が異なっている -> 競合状態
+
+---
+
+# コミットの競合
+## 競合が発生した
+
+![](images/conflict.png)
+
+このときconflict.txtはgitにより書き換えられてます
+```
+$ cat conflict.txt
+```
+
+<div class="mermaid">
+gitGraph
+    commit id: "Add conflict.txt"
+    branch "conflict-branch"
+    checkout "conflict-branch"
+    commit id: "Add conflict.txt on c-b"
+    checkout "main"
+    commit id: "Add conflict.txt on main"
+    merge "conflict-branch" type: REVERSE
+</div>
+
+---
+
+# コミットの競合
+## 競合が発生した
+
+```
+<<<<<<< HEAD
+test conflict on main
+=======
+test conflict on conflict-branch
+>>>>>>> conflict-branch
+```
+
+---
+
+# コミットの競合
+## 競合ファイルの中身(解説)
+
+![](images/conflict-info.drawio.png)
+
+実際にファイルが書き換えられている(マーカー文字込みで)ので注意!
+(このままコンパイルするとまず失敗するゾ)
+
+---
+
+# コミットの競合
+## 解決への糸口(1/3)
+
+* 両者のコードの意図が同じならどちらかを採用すればよい
+  * マーカー文字(`<<<`や`>>>`、`===`)の削除を忘れずに
+  * 相手に連絡してからやった方が良い
+
+---
+
+# コミットの競合
+## 解決への糸口(2/3)
+
+* 両者のコードの意図が違う
+  * 相手に連絡してどうするかを考える
+  * 相手をどう調べる? →後で
+  * 話し合いをした上でどうするかを考えて片方で修正する
+* 場合によっては『両方とも必要』ということもある
+
+---
+
+# コミットの競合
+## 解決への糸口(3/3)
+
+競合したのは誰なのか?
+```
+$ git blame conflict.txt
+00000000 (Not Committed Yet 2024-07-23 14:34:32 +0900 1) <<<<<<< HEAD
+d18a29ed (SATO Daisuke      2024-07-23 14:26:20 +0900 2) test conflict on main
+00000000 (Not Committed Yet 2024-07-23 14:34:32 +0900 3) =======
+858946ba (SATO Daisuke      2024-07-23 14:25:55 +0900 4) test conflict on conflict-branch
+00000000 (Not Committed Yet 2024-07-23 14:34:32 +0900 5) >>>>>>> conflict-branch
+```
+コミットIDがわかるのでログを見ればわかる
+
+---
+
+# コミットの競合
+## 誰とぶつかった?
+
+該当行のコミットIDをもとに`git show`で詳細を見るとコミットした人がわかる
+
+```
+$ git show 858946ba
+```
+
+![bg right:50% w:500](images/conflict-user.drawio.png)
+
+---
+
+# コミットの競合
+## 修正後
+
+* 競合時のマーカー文字列はちゃんと消した?
+* ビルドは通る?
+* 期待通りの挙動になっている?
+* 確認できたら`git add`して`git commit`する
+
+---
+
+# コミットの競合
+## 修正後->コミット
+
+例えばこんな感じで修正
+```
+test conflict on main & conflict-branch
+```
+
+```
+$ git add conflict.txt
+$ git commit
+```
+
+実はこのときに既にコミットメッセージが入っているので確認してそのまま終了すれば良い
+
+---
+
+# コミットの競合
+# (自動挿入メッセージ)
+
+```
+Merge branch 'conflict-branch'
+
+# Conflicts:
+#       conflict.txt
+#
+# It looks like you may be committing a merge.
+# If this is not correct, please run
+#       git update-ref -d MERGE_HEAD
+# and try again.
+```
+
+```
+[main 80520bc] Merge branch 'conflict-branch'
+```
+
+---
+
+# コミットの競合
+# 競合の解決コミット
+
+<div class="mermaid">
+gitGraph
+    commit id: "Add conflict.txt"
+    branch "conflict-branch"
+    checkout "conflict-branch"
+    commit id: "Add conflict.txt on c-b"
+    checkout "main"
+    commit id: "Add conflict.txt on main"
+    merge "conflict-branch"
+</div>
